@@ -36,7 +36,7 @@ class HomeView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             header,
-            text="Sistema de Analisis Estadistico descriptivo y pruebas no paramétricas",
+            text="Sistema de Analisis Estadistico Colsign",
             font=ctk.CTkFont(size=26, weight="bold"),
         ).grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(

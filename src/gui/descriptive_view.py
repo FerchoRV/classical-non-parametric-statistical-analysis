@@ -19,6 +19,11 @@ CHART_BAR = "Barras (texto o numerica)"
 CHART_BOX = "Cajas (columna numerica)"
 CHART_SCATTER = "Dispersion (dos columnas numericas)"
 CHART_PIE = "Circular (porcentaje, texto o numerica)"
+CHART_STACKED = "Barra apilada (cantidad, ordinal por grupo)"
+CHART_HEATMAP = "Mapa de calor (ordinal por grupo)"
+
+# Graficos de tendencia que usan los selectores grupo + ordinal
+_TREND_CHARTS = (CHART_STACKED, CHART_HEATMAP)
 
 
 class DescriptiveView(ctk.CTkFrame):
@@ -30,7 +35,7 @@ class DescriptiveView(ctk.CTkFrame):
         self.navigate = navigate
         self._last_describe: pd.DataFrame | None = None
         self._current_figure = None
-        self._canvas: FigureCanvasTkAgg | None = None
+        self._mpl_canvas: FigureCanvasTkAgg | None = None
         self._column_checks: dict[str, ctk.CTkCheckBox] = {}
 
         self.grid_columnconfigure(1, weight=1)
@@ -39,6 +44,7 @@ class DescriptiveView(ctk.CTkFrame):
         self._build_header()
         self._build_controls()
         self._build_content()
+        self._on_chart_change(self.chart_menu.get())
 
     # ------------------------------------------------------------------ UI
     def _build_header(self) -> None:
@@ -102,11 +108,36 @@ class DescriptiveView(ctk.CTkFrame):
         ).pack(anchor="w", pady=(4, 6))
         ctk.CTkLabel(panel, text="Tipo de grafico").pack(anchor="w")
         self.chart_menu = ctk.CTkOptionMenu(
-            panel, values=[CHART_BAR, CHART_BOX, CHART_SCATTER, CHART_PIE],
+            panel,
+            values=[CHART_BAR, CHART_BOX, CHART_SCATTER, CHART_PIE,
+                    CHART_STACKED, CHART_HEATMAP],
+            command=self._on_chart_change,
             fg_color=config.COLOR_PRIMARY, button_color=config.COLOR_PRIMARY_HOVER,
             dynamic_resizing=False, width=300,
         )
         self.chart_menu.pack(anchor="w", fill="x", pady=(2, 8))
+
+        # Selectores dedicados para los graficos de tendencia (grupo + ordinal).
+        # Se muestran solo cuando el tipo lo requiere.
+        self.trend_frame = ctk.CTkFrame(panel, fg_color="transparent")
+        self.trend_frame.pack(anchor="w", fill="x")
+        self.trend_hint = ctk.CTkLabel(
+            self.trend_frame,
+            text="Tendencia: elija la columna de agrupacion y la ordinal (1-5).",
+            text_color="#94a3b8", font=ctk.CTkFont(size=11),
+            wraplength=300, justify="left",
+        )
+        self.trend_hint.pack(anchor="w", pady=(0, 6))
+        ctk.CTkLabel(self.trend_frame, text="Columna de agrupacion (texto o numerica)").pack(anchor="w")
+        self.menu_group = ctk.CTkOptionMenu(
+            self.trend_frame, values=["-"], width=300, dynamic_resizing=False,
+        )
+        self.menu_group.pack(anchor="w", fill="x", pady=(2, 6))
+        ctk.CTkLabel(self.trend_frame, text="Columna ordinal (numerica 1-5)").pack(anchor="w")
+        self.menu_ordinal = ctk.CTkOptionMenu(
+            self.trend_frame, values=["-"], width=300, dynamic_resizing=False,
+        )
+        self.menu_ordinal.pack(anchor="w", fill="x", pady=(2, 6))
 
         self._build_plot_options(panel)
 
@@ -131,6 +162,7 @@ class DescriptiveView(ctk.CTkFrame):
     def _build_plot_options(self, panel) -> None:
         opt = ctk.CTkFrame(panel, fg_color="transparent")
         opt.pack(anchor="w", fill="x")
+        self.opt_frame = opt
         ctk.CTkLabel(opt, text="Titulo").pack(anchor="w")
         self.opt_title = ctk.CTkEntry(opt, placeholder_text="Titulo del grafico")
         self.opt_title.pack(anchor="w", fill="x", pady=(0, 4))
@@ -185,6 +217,23 @@ class DescriptiveView(ctk.CTkFrame):
         df = self.state.dataframe
         self.table.show(df)
         self._populate_checks(df)
+        all_cols = [str(c) for c in df.columns]
+        numeric = get_numeric_columns(df) or all_cols
+        self._set_menu(self.menu_group, all_cols)
+        self._set_menu(self.menu_ordinal, numeric or all_cols)
+
+    @staticmethod
+    def _set_menu(menu: ctk.CTkOptionMenu, values: list[str]) -> None:
+        values = values or ["-"]
+        menu.configure(values=values)
+        menu.set(values[0])
+
+    def _on_chart_change(self, choice: str) -> None:
+        """Muestra los selectores de tendencia solo para barra apilada/heatmap."""
+        if choice in _TREND_CHARTS:
+            self.trend_frame.pack(anchor="w", fill="x", before=self.opt_frame)
+        else:
+            self.trend_frame.pack_forget()
 
     def _populate_checks(self, df: pd.DataFrame) -> None:
         for child in self.checks_frame.winfo_children():
@@ -295,6 +344,16 @@ class DescriptiveView(ctk.CTkFrame):
                     "Para circular seleccione exactamente UNA columna (texto o numerica)."
                 )
             return plotting.create_pie_chart(df, cols[0], options)
+        if kind in _TREND_CHARTS:
+            group = self.menu_group.get()
+            ordinal = self.menu_ordinal.get()
+            if group == ordinal:
+                raise ValueError("La columna de agrupacion y la ordinal deben ser distintas.")
+            if ordinal not in numeric:
+                raise ValueError("La columna ordinal debe ser numerica (ej. 1-5).")
+            if kind == CHART_STACKED:
+                return plotting.create_stacked_bar_chart(df, group, ordinal, options)
+            return plotting.create_heatmap_chart(df, group, ordinal, options)
         # Dispersion
         num_cols = [c for c in cols if c in numeric]
         if len(num_cols) != 2:
@@ -305,11 +364,11 @@ class DescriptiveView(ctk.CTkFrame):
 
     def _embed_figure(self, fig) -> None:
         self.result_box.grid_remove()
-        if self._canvas is not None:
-            self._canvas.get_tk_widget().destroy()
-        self._canvas = FigureCanvasTkAgg(fig, master=self.preview)
-        self._canvas.draw()
-        self._canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
+        if self._mpl_canvas is not None:
+            self._mpl_canvas.get_tk_widget().destroy()
+        self._mpl_canvas = FigureCanvasTkAgg(fig, master=self.preview)
+        self._mpl_canvas.draw()
+        self._mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew", padx=6, pady=6)
 
     def _save_graph(self) -> None:
         if self._current_figure is None:
@@ -341,14 +400,21 @@ class DescriptiveView(ctk.CTkFrame):
         self.btn_save_graph.configure(state="disabled")
         for chk in self._column_checks.values():
             chk.deselect()
+        # Restablece los selectores de tendencia
+        if self.state.has_data:
+            df = self.state.dataframe
+            all_cols = [str(c) for c in df.columns]
+            numeric = get_numeric_columns(df) or all_cols
+            self._set_menu(self.menu_group, all_cols)
+            self._set_menu(self.menu_ordinal, numeric or all_cols)
         # Limpia opciones de personalizacion del grafico
         self.opt_title.delete(0, "end")
         self.opt_xlabel.delete(0, "end")
         self.opt_ylabel.delete(0, "end")
         # Limpia la previsualizacion (texto o grafico)
-        if self._canvas is not None:
-            self._canvas.get_tk_widget().destroy()
-            self._canvas = None
+        if self._mpl_canvas is not None:
+            self._mpl_canvas.get_tk_widget().destroy()
+            self._mpl_canvas = None
         self.result_box.grid()
         self.result_box.configure(state="normal")
         self.result_box.delete("1.0", "end")
@@ -356,9 +422,9 @@ class DescriptiveView(ctk.CTkFrame):
 
     # -------------------------------------------------------------- Helpers
     def _show_text(self, text: str) -> None:
-        if self._canvas is not None:
-            self._canvas.get_tk_widget().destroy()
-            self._canvas = None
+        if self._mpl_canvas is not None:
+            self._mpl_canvas.get_tk_widget().destroy()
+            self._mpl_canvas = None
         self.result_box.grid()
         self.result_box.configure(state="normal")
         self.result_box.delete("1.0", "end")

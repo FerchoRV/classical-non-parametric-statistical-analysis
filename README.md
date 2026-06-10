@@ -122,6 +122,17 @@ conclusión simple). Tras guardar, la selección y la previsualización se
   - **Dispersión:** exactamente dos columnas numéricas.
   - **Circular:** una columna de texto/object o numérica; calcula y muestra el
     **porcentaje** (y la frecuencia) de cada categoría en su porción del círculo.
+  - **Barra apilada (cantidad, ordinal por grupo):** muestra la **tendencia** de
+    una variable ordinal (1–5) según una columna de agrupación (texto o
+    numérica). El eje vertical es la **cantidad de respuestas**, por lo que las
+    barras tienen distinto tamaño según el número de personas de cada grupo.
+    Cada segmento se anota con su **porcentaje sobre el total** y el conteo. La
+    leyenda no lleva título.
+  - **Mapa de calor (ordinal por grupo):** misma relación en forma de matriz
+    (filas = grupo, columnas = nivel 1–5); el color refleja el **porcentaje
+    sobre el total** y cada celda muestra ese porcentaje y el conteo.
+  - Para estos dos últimos se eligen dos columnas con selectores dedicados:
+    la **columna de agrupación** y la **columna ordinal** (numérica).
 - Personalice título, etiquetas de ejes X/Y, cuadrícula y leyenda. El gráfico se
   **previsualiza** y se guarda como **PNG** en `graphics/`. Tras guardar
   (descriptivos o gráfico), la selección y la previsualización se **limpian

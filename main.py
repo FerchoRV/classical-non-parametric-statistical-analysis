@@ -1,4 +1,4 @@
-"""Punto de entrada principal del sistema de analisis estadistico descriptivo y pruebas no paramétricas.
+"""Punto de entrada principal del sistema de analisis estadistico Colsign.
 
 Ejecutar con el entorno virtual activado:
 

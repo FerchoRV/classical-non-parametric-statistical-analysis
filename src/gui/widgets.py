@@ -25,7 +25,7 @@ class DataFrameTable(ctk.CTkFrame):
 
         self._style_treeview()
 
-        self.tree = ttk.Treeview(self, show="headings", style="descriptivo y pruebas no paramétricas.Treeview")
+        self.tree = ttk.Treeview(self, show="headings", style="Colsign.Treeview")
         self.tree.grid(row=0, column=0, sticky="nsew", padx=(8, 0), pady=8)
 
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
@@ -49,7 +49,7 @@ class DataFrameTable(ctk.CTkFrame):
         except tk.TclError:
             pass
         style.configure(
-            "descriptivo y pruebas no paramétricas.Treeview",
+            "Colsign.Treeview",
             background="#0f172a",
             foreground="#e2e8f0",
             fieldbackground="#0f172a",
@@ -58,18 +58,18 @@ class DataFrameTable(ctk.CTkFrame):
             font=("Segoe UI", 10),
         )
         style.configure(
-            "descriptivo y pruebas no paramétricas.Treeview.Heading",
+            "Colsign.Treeview.Heading",
             background=config.COLOR_PRIMARY,
             foreground="white",
             font=("Segoe UI", 10, "bold"),
             relief="flat",
         )
         style.map(
-            "descriptivo y pruebas no paramétricas.Treeview",
+            "Colsign.Treeview",
             background=[("selected", config.COLOR_SECONDARY)],
             foreground=[("selected", "white")],
         )
-        style.map("descriptivo y pruebas no paramétricas.Treeview.Heading", background=[("active", config.COLOR_PRIMARY_HOVER)])
+        style.map("Colsign.Treeview.Heading", background=[("active", config.COLOR_PRIMARY_HOVER)])
 
     def show(self, df: pd.DataFrame, max_rows: int = 500) -> None:
         """Muestra el DataFrame (limitado a ``max_rows`` filas por rendimiento)."""
