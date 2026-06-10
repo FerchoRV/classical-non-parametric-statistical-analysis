@@ -1,4 +1,4 @@
-"""Punto de entrada principal del sistema de analisis estadistico Colsign.
+"""Punto de entrada principal del sistema de analisis estadistico.
 
 Ejecutar con el entorno virtual activado:
 

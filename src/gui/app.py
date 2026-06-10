@@ -11,8 +11,8 @@ from .nonparametric_view import NonParametricView
 from .state import AppState
 
 
-class ColsignApp(ctk.CTk):
-    """Aplicacion principal del sistema de analisis Colsign."""
+class AnalisisApp(ctk.CTk):
+    """Aplicacion principal del sistema de analisis estadistico."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -59,5 +59,5 @@ class ColsignApp(ctk.CTk):
 
 def run() -> None:
     """Punto de entrada para lanzar la aplicacion grafica."""
-    app = ColsignApp()
+    app = AnalisisApp()
     app.mainloop()

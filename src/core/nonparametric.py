@@ -1,4 +1,4 @@
-"""Pruebas estadisticas no parametricas para el estudio Colsign.
+"""Pruebas estadisticas no parametricas genericas.
 
 Implementa:
   * Correlacion de rangos de Spearman (rho)   -> modulo Senas a Texto.

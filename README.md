@@ -1,8 +1,9 @@
-# Sistema de Análisis Estadístico Colsign
+# Sistema de Análisis Estadístico
 
-Aplicación de escritorio con interfaz gráfica moderna (customtkinter) para la
-evaluación de la percepción del usuario sobre el sistema **Colsign**, basada en
-**estadística no paramétrica** y **estadística descriptiva**.
+Aplicación de escritorio genérica con interfaz gráfica moderna (customtkinter)
+para el análisis de datos de encuestas y mediciones, basada en **estadística no
+paramétrica** y **estadística descriptiva**. Funciona con cualquier conjunto de
+datos (Excel, CSV, TXT o JSON), no está atado a un estudio en particular.
 
 Se justifica el uso de pruebas no paramétricas porque las variables son de
 escala **ordinal** (Likert 1–5) y **dicotómica** (1 = Sí / 0 = No), que violan
@@ -35,7 +36,7 @@ python -m venv .venv
 ```
 main.py                      Punto de entrada principal (conexión a documentos)
 requirements.txt             Dependencias del proyecto
-consolidado_estudio_de_caso_colsign.xlsx  Datos del estudio de caso
+<sus_datos>.xlsx|.csv|.txt|.json  Datos a analizar (cualquier archivo de entrada)
 results/                     Resultados exportados (Excel)
 graphics/                    Gráficos exportados (PNG)
 src/
